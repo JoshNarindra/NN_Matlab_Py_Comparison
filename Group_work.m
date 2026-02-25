@@ -14,6 +14,7 @@ Y = data{:,end}; % Data labels from the last column for every observation.
 %% Encode Labels into Categorical Integer Format
 Y = categorical(Y); % Encode Data from Class names (labels) to Categorical Integers mapped to Label Names.
 
+%head(Y) %Check
 %% Split the Training and Testing Data 80/20 (Stratified)
 cv = cvpartition(Y, 'HoldOut', 0.2);
 
@@ -22,7 +23,7 @@ YTrain = Y(training(cv)); % Corresponding labels for the training data
 XTest = X(test(cv),:);    % Test data features
 YTest = Y(test(cv));      % Corresponding labels for the test data
 
-%% Standardize Features
+%% Feature Scaling
 
 mu = mean(XTrain);
 sigma = std(XTrain);
@@ -38,14 +39,17 @@ XTest = XTest';
 YTrain_dummy = dummyvar(YTrain)';
 YTest_dummy = dummyvar(YTest)';
 
-%% Build Model
+%head(YTest_dummy);
 
-neurons = 32;
-net = patternnet(neurons);
+%% Build Single Hidden Layer Multilayer Perceptron
 
-net.divideFcn = 'dividetrain';
+% Allow for varying of neurons in hidden layer
+hiddenLayerSize = 32;
+net = patternnet(hiddenLayerSize);
 
 %% Train Network
+
+%net = train(net,)
 
 %% Predictions
 
