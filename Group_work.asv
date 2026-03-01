@@ -45,12 +45,6 @@ YTest_dummy = dummyvar(YTest);
 
 %% Build Single Hidden Layer Multilayer Perceptron
 
-% Define Sigmoid Activation Function
-function output = sigmoid(z)
-    output = 1./ (1 + exp(-z));
-end
-
-
 % Allow for varying of neurons in hidden layer
 hiddenLayer = 3;
 inputFeatures = 16;
@@ -63,7 +57,6 @@ B1 = zeros(1, hiddenLayer);
 Z1 = XTrain * W1 + B1;
 A1 = sigmoid(Z1);
 
-
 % Hidden Layer to Output Layer
 W2 = randn(hiddenLayer,outputLayer);
 B2 = zeros(1, outputLayer);
@@ -71,7 +64,18 @@ B2 = zeros(1, outputLayer);
 Z2 = A1 * W2 + B2;
 A2 = sigmoid(Z2);
 
+% Cross Entropy Loss
+loss = cross_entropy(A2, YTrain_dummy);
+
+% Mean Square Error Loss
+mse_loss = 
+
 % Backpropogation 
+% Output Layer Gradients
+
+dZ2 = A2 - YTrain_dummy
+
+
 
 %% Train Network
 [numSamples, numFeatures] = size(XTrain);
@@ -82,3 +86,28 @@ A2 = sigmoid(Z2);
 %% Evaluate Performance
 
 %% Tune Hidden Size and Learning Rate
+
+
+%% Functions
+
+% Define Sigmoid Activation Function
+function output = sigmoid(z)
+    output = 1./ (1 + exp(-z));
+end
+
+% Cross Entropy Loss
+function loss = cross_entropy(predictions, true_labels)
+m = size(predictions, 1);% number of samples
+% Add small epsilon to avoid log(0)
+loss = -sum(sum(true_labels .* log(predictions + 1e-8))) / m;
+end 
+
+function output = sigmoid_derivative(a)
+    % Derivative of sigmoid: a * (1 - a)
+    output = a .* (1 - a);
+end
+
+function loss = mse_loss(y_true, y_pred)
+    % Mean Squared Error loss (matching Python)
+    loss = 0.5 * mean(sum((y_true - y_pred).^2, 2));
+end
