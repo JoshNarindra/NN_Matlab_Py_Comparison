@@ -46,12 +46,12 @@ YTest_dummy = dummyvar(YTest);
 %% Build Single Hidden Layer Multilayer Perceptron
 
 % Hyperparameters
-hiddenLayer = 20;
+hiddenLayer = 64;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.1;
-num_epochs = 200; % Set the number of training epochs
+learning_rate = 0.01;
+num_epochs = 300; % Set the number of training epochs
 
 %I NEED TO VARY THESE HYPERPARAMETERS 
 
@@ -79,7 +79,7 @@ for epoch = 1:num_epochs
     A1 = sigmoid(Z1);
     % Hidden Layer to Output Layer
     Z2 = A1 * W2 + B2;
-    A2 = sigmoid(Z2);
+    A2 = softmax(Z2);
 
     % Mean Square Error Loss
     loss = mse_loss(YTrain_dummy, A2);
@@ -89,7 +89,7 @@ for epoch = 1:num_epochs
     %% Backpropogation
 
     % Output layer gradients
-    delta2 = ((A2 - YTrain_dummy) .* (A2 .* (1 - A2))) / numSamples;
+    delta2 = (A2 - YTrain_dummy) / numSamples;
     dW2 = A1' * delta2;
     dB2 = sum(delta2, 1);
 
@@ -121,7 +121,7 @@ fprintf('Training completed in %.5f seconds\n', training_time);
 Z1_test = XTest * W1 + B1;
 A1_test = sigmoid(Z1_test);
 Z2_test = A1_test * W2 + B2;
-A2_test = sigmoid(Z2_test);
+A2_test = softmax(Z2_test);
 
 %% Get predictions (which class has highest probability) -- Used AI to help me with index syntax for matlab
 [~, predicted] = max(A2_test, [], 2);  % Predicted class for each test bean
@@ -165,3 +165,13 @@ function loss = mse_loss(y_true, y_pred)
     % Mean Squared Error loss (matching Python)
     loss = 0.5 * mean(sum((y_true - y_pred).^2, 2));
 end
+
+% Softmax Activation Function (for output layer) % USED AI
+function output = softmax(z)
+    % Softmax for multi-class classification
+    % z: (numSamples × numClasses) matrix
+    % Returns: probabilities summing to 1 for each sample
+    z_shifted = z - max(z, [], 2);  % Numerical stability
+    exp_z = exp(z_shifted);
+    output = exp_z ./ sum(exp_z, 2);  % Normalize each row
+end 
