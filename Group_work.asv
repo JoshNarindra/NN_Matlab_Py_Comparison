@@ -50,7 +50,7 @@ hiddenLayer = 20;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.1;
+learning_rate = 0.01;
 num_epochs = 200; % Set the number of training epochs
 
 %I NEED TO VARY THESE HYPERPARAMETERS 
@@ -89,7 +89,7 @@ for epoch = 1:num_epochs
     %% Backpropogation
 
     % Output layer gradients
-    delta2 = ((A2 - YTrain_dummy) .* (A2 .* (1 - A2))) / numSamples;
+    delta2 = ((A2 - YTrain_dummy) / numSamples;
     dW2 = A1' * delta2;
     dB2 = sum(delta2, 1);
 
@@ -134,7 +134,9 @@ fprintf('Test Accuracy: %.4f%%\n', test_accuracy);
 %% Save output to file for Plotting
 
 fprintf("Matlab_Export_Results");
-matlab_losses_table = table((1:num_epochs)', losses, ..'VariableNames', {'Epoch', 'Loss'});
+matlab_losses_table = table((1:num_epochs)', losses,'VariableNames', {'Epoch', 'Loss'});
+writetable(matlab_losses_table, 'matlab_losses.csv');
+fprintf('✓ Exported training losses to matlab_losses.csv\n');
 
 %% Tune Hidden Size and Learning Rate
 
@@ -163,3 +165,4 @@ function loss = mse_loss(y_true, y_pred)
     % Mean Squared Error loss (matching Python)
     loss = 0.5 * mean(sum((y_true - y_pred).^2, 2));
 end
+
