@@ -45,42 +45,98 @@ YTest_dummy = dummyvar(YTest);
 
 %% Build Single Hidden Layer Multilayer Perceptron
 
-% Allow for varying of neurons in hidden layer
-hiddenLayer = 3;
+% Hyperparameters
+hiddenLayer = 20;
 inputFeatures = 16;
 outputLayer = 7;
 
-% Input Layer to Hidden Layer
-W1 = randn(inputFeatures, hiddenLayer);
+learning_rate = 0.1;
+num_epochs = 200; % Set the number of training epochs
+
+%I NEED TO VARY THESE HYPERPARAMETERS 
+
+% Initialise Weights
+rng(42); %seed
+W1 = randn(inputFeatures, hiddenLayer) * 0.01;
 B1 = zeros(1, hiddenLayer);
-
-Z1 = XTrain * W1 + B1;
-A1 = sigmoid(Z1);
-
-% Hidden Layer to Output Layer
-W2 = randn(hiddenLayer,outputLayer);
+W2 = randn(hiddenLayer,outputLayer) * 0.01;
 B2 = zeros(1, outputLayer);
 
-Z2 = A1 * W2 + B2;
-A2 = sigmoid(Z2);
+[numSamples, numFeatures] = size(XTrain); % Number of Features
 
-% Cross Entropy Loss
-loss = cross_entropy(A2, YTrain_dummy);
-
-% Mean Square Error Loss
-mse_loss = mse_loss(YTrain_dummy, A2);
-
-% Backpropogation 
-[numSamples, numFeatures] = size(XTrain);
-
-
+% Storage for tracking progress
+losses = zeros(num_epochs, 1);
 
 %% Train Network
+fprintf('Starting training timer .... \n');
+tic;  % Start timer
 
+for epoch = 1:num_epochs
+    %% Forward Pass
+
+    % Input Layer to Hidden Layer
+    Z1 = XTrain * W1 + B1;
+    A1 = sigmoid(Z1);
+    % Hidden Layer to Output Layer
+    Z2 = A1 * W2 + B2;
+    A2 = sigmoid(Z2);
+
+    % Mean Square Error Loss
+    loss = mse_loss(YTrain_dummy, A2);
+    % Store loss for current epoch
+    losses(epoch) = loss;
+
+    %% Backpropogation
+
+    % Output layer gradients
+    delta2 = ((A2 - YTrain_dummy) .* (A2 .* (1 - A2))) / numSamples;
+    dW2 = A1' * delta2;
+    dB2 = sum(delta2, 1);
+
+    % Hidden Layer Gradients
+    delta1 = (delta2 * W2') .* (A1 .* (1 - A1));
+    dW1 = XTrain' * delta1;
+    dB1 = sum(delta1, 1);
+
+    % Update Weights (Grad Desc)
+    W1 = W1 - learning_rate * dW1;
+    B1 = B1 - learning_rate * dB1;
+    W2 = W2 - learning_rate * dW2;
+    B2 = B2 - learning_rate * dB2;
+
+    %% Progress and Loss
+    if mod(epoch, 10) == 0
+        fprintf('Epoch %d/%d, Loss: %.6f\n', epoch, num_epochs, loss);
+    end
+end
+
+%%Timing of the Training
+fprintf('Stop training timer \n');
+training_time = toc;  % End timer
+fprintf('Training completed in %.5f seconds\n', training_time);
 
 %% Predictions
 
-%% Evaluate Performance
+% Forward pass using test data
+Z1_test = XTest * W1 + B1;
+A1_test = sigmoid(Z1_test);
+Z2_test = A1_test * W2 + B2;
+A2_test = sigmoid(Z2_test);
+
+%% Get predictions (which class has highest probability) -- Used AI to help me with index syntax for matlab
+[~, predicted] = max(A2_test, [], 2);  % Predicted class for each test bean
+[~, actual] = max(YTest_dummy, [], 2); % True class for each test bean
+
+% Calculate accuracy
+test_accuracy = sum(predicted == actual) / length(actual) * 100;
+fprintf('Test Accuracy: %.4f%%\n', test_accuracy);
+
+%% Save output to file for Plotting
+
+fprintf("Matlab_Export_Results");
+matlab_losses_table = table((1:num_epochs)', losses,'VariableNames', {'Epoch', 'Loss'});
+writetable(matlab_losses_table, 'matlab_losses.csv');
+fprintf('✓ Exported training losses to matlab_losses.csv\n');
 
 %% Tune Hidden Size and Learning Rate
 
