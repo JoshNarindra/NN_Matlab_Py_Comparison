@@ -46,15 +46,17 @@ YTest_dummy = dummyvar(YTest);
 %% Build Single Hidden Layer Multilayer Perceptron
 
 % Hyperparameters
-hiddenLayer = 30;
+hiddenLayer = 20;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.1
-num_epochs = 100; % Set the number of training epochs
+learning_rate = 0.1;
+num_epochs = 200; % Set the number of training epochs
+
+%I NEED TO VARY THESE HYPERPARAMETERS 
 
 % Initialise Weights
-rng(10); %seed
+rng(42); %seed
 W1 = randn(inputFeatures, hiddenLayer) * 0.01;
 B1 = zeros(1, hiddenLayer);
 W2 = randn(hiddenLayer,outputLayer) * 0.01;
@@ -66,7 +68,6 @@ B2 = zeros(1, outputLayer);
 losses = zeros(num_epochs, 1);
 
 %% Train Network
-
 fprintf('Starting training timer .... \n');
 tic;  % Start timer
 
@@ -116,7 +117,26 @@ fprintf('Training completed in %.5f seconds\n', training_time);
 
 %% Predictions
 
-%% Evaluate Performance
+% Forward pass using test data
+Z1_test = XTest * W1 + B1;
+A1_test = sigmoid(Z1_test);
+Z2_test = A1_test * W2 + B2;
+A2_test = sigmoid(Z2_test);
+
+%% Get predictions (which class has highest probability) -- Used AI to help me with index syntax for matlab
+[~, predicted] = max(A2_test, [], 2);  % Predicted class for each test bean
+[~, actual] = max(YTest_dummy, [], 2); % True class for each test bean
+
+% Calculate accuracy
+test_accuracy = sum(predicted == actual) / length(actual) * 100;
+fprintf('Test Accuracy: %.4f%%\n', test_accuracy);
+
+%% Save output to file for Plotting
+
+fprintf("Matlab_Export_Results");
+matlab_losses_table = table((1:num_epochs)', losses,'VariableNames', {'Epoch', 'Loss'});
+writetable(matlab_losses_table, 'matlab_losses.csv');
+fprintf('✓ Exported training losses to matlab_losses.csv\n');
 
 %% Tune Hidden Size and Learning Rate
 
