@@ -26,6 +26,7 @@ Y = categorical(Y); % Encode Data from Class names (labels) to Categorical Integ
 
 %head(Y) %Check
 %% Split the Training and Testing Data 80/20 (Stratified)
+
 cv = cvpartition(Y, 'HoldOut', 0.2);
 
 XTrain = X(training(cv),:); % Training data features
@@ -63,7 +64,6 @@ num_epochs = 300; % Set the number of training epochs
 %I NEED TO VARY THESE HYPERPARAMETERS 
 
 % Initialise Weights
-%rng(42); %seed
 W1 = randn(inputFeatures, hiddenLayer) * sqrt(1/inputFeatures); % here chatgpt helped add a scaling multipler
 B1 = zeros(1, hiddenLayer);
 W2 = randn(hiddenLayer,outputLayer) * sqrt(1/hiddenLayer); % here chatgpt helped add a scaling multipler
