@@ -1,4 +1,9 @@
 
+% Implementation uses Signmoid Activation functions for both hidden layer
+% and output layer and uses MSE as the loss metric - In the process of
+% doing this i have learned this is not optimal for accuracy and therefore
+% the accuracy of 45% is a bottleneck
+
 %% Load Data
 data = readtable('Dry_Bean_Dataset.xlsx');
 
@@ -43,23 +48,25 @@ YTest_dummy = dummyvar(YTest);
 
 %head(YTest_dummy);
 
+%% Initial Baseline Model with Fixed Hyper Parameters
+
 %% Build Single Hidden Layer Multilayer Perceptron
 
 % Hyperparameters
-hiddenLayer = 20;
+hiddenLayer = 64;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.01;
-num_epochs = 200; % Set the number of training epochs
+learning_rate = 0.05;
+num_epochs = 300; % Set the number of training epochs
 
 %I NEED TO VARY THESE HYPERPARAMETERS 
 
 % Initialise Weights
 rng(42); %seed
-W1 = randn(inputFeatures, hiddenLayer) * 0.01;
+W1 = randn(inputFeatures, hiddenLayer) * sqrt(1/inputFeatures); % here chatgpt helped add a scaling multipler
 B1 = zeros(1, hiddenLayer);
-W2 = randn(hiddenLayer,outputLayer) * 0.01;
+W2 = randn(hiddenLayer,outputLayer) * sqrt(1/hiddenLayer); % here chatgpt helped add a scaling multipler
 B2 = zeros(1, outputLayer);
 
 [numSamples, numFeatures] = size(XTrain); % Number of Features
@@ -89,7 +96,7 @@ for epoch = 1:num_epochs
     %% Backpropogation
 
     % Output layer gradients
-    delta2 = ((A2 - YTrain_dummy) / numSamples;
+    delta2 = (A2 - YTrain_dummy) .* (A2 .* (1 - A2))/ numSamples;
     dW2 = A1' * delta2;
     dB2 = sum(delta2, 1);
 
@@ -105,6 +112,8 @@ for epoch = 1:num_epochs
     B2 = B2 - learning_rate * dB2;
 
     %% Progress and Loss
+
+    %print the loss every 10 epochs for debugging and checking purposes
     if mod(epoch, 10) == 0
         fprintf('Epoch %d/%d, Loss: %.6f\n', epoch, num_epochs, loss);
     end
@@ -131,16 +140,167 @@ A2_test = sigmoid(Z2_test);
 test_accuracy = sum(predicted == actual) / length(actual) * 100;
 fprintf('Test Accuracy: %.4f%%\n', test_accuracy);
 
-%% Save output to file for Plotting
+%% Save output to file for Plotting Loss Curve by Epochs
 
 fprintf("Matlab_Export_Results");
 matlab_losses_table = table((1:num_epochs)', losses,'VariableNames', {'Epoch', 'Loss'});
 writetable(matlab_losses_table, 'matlab_losses.csv');
 fprintf('✓ Exported training losses to matlab_losses.csv\n');
 
-%% Tune Hidden Size and Learning Rate
+%% Hyperparmeter Change implementation
+
+% Here we will vary the Learning Rate and Hidden Layer Neurons to determine
+% the differences in training speeds and test set accuracies 
 
 
+learning_rates = [0.001 0.01 0.05 0.1];
+hidden_sizes = [32 64 128];
+
+results = [];
+
+for lr = learning_rates
+    for h = hidden_sizes
+        
+        fprintf("\nRunning model: LR = %.3f, Hidden = %d\n", lr, h);
+        
+        hiddenLayer = h;
+        learning_rate = lr;
+
+        % Reinitialise weights for each experiment
+        W1 = randn(inputFeatures, hiddenLayer) * sqrt(1/inputFeatures);
+        B1 = zeros(1, hiddenLayer);
+        W2 = randn(hiddenLayer, outputLayer) * sqrt(1/hiddenLayer);
+        B2 = zeros(1, outputLayer);
+
+        losses = zeros(num_epochs,1);
+
+        tic; % Start timer
+        
+        for epoch = 1:num_epochs
+            
+            % Forward pass
+            Z1 = XTrain * W1 + B1;
+            A1 = sigmoid(Z1);
+
+            Z2 = A1 * W2 + B2;
+            A2 = sigmoid(Z2);
+
+            loss = mse_loss(YTrain_dummy, A2);
+            losses(epoch) = loss;
+
+            % Backpropagation
+            delta2 = (A2 - YTrain_dummy) .* (A2 .* (1 - A2)) / numSamples;
+
+            dW2 = A1' * delta2;
+            dB2 = sum(delta2,1);
+
+            delta1 = (delta2 * W2') .* (A1 .* (1 - A1));
+
+            dW1 = XTrain' * delta1;
+            dB1 = sum(delta1,1);
+
+            % Gradient descent update
+            W1 = W1 - learning_rate * dW1;
+            B1 = B1 - learning_rate * dB1;
+            W2 = W2 - learning_rate * dW2;
+            B2 = B2 - learning_rate * dB2;
+
+        end
+        
+        training_time = toc; % Stop timer
+
+        %% Evaluate Test Accuracy
+        Z1_test = XTest * W1 + B1;
+        A1_test = sigmoid(Z1_test);
+
+        Z2_test = A1_test * W2 + B2;
+        A2_test = sigmoid(Z2_test);
+
+        [~, predicted] = max(A2_test, [], 2);
+        [~, actual] = max(YTest_dummy, [], 2);
+
+        test_accuracy = mean(predicted == actual) * 100;
+
+        % Store results
+        results = [results; lr h training_time test_accuracy];
+
+    end
+end
+
+
+learning_rates = [0.001 0.01 0.05 0.1];
+hidden_sizes = [32 64 128];
+
+results = [];
+
+for lr = learning_rates
+    for h = hidden_sizes
+        
+        fprintf("\nRunning model: LR = %.3f, Hidden = %d\n", lr, h);
+        
+        hiddenLayer = h;
+        learning_rate = lr;
+
+        % Reinitialise weights for each experiment
+        W1 = randn(inputFeatures, hiddenLayer) * sqrt(1/inputFeatures);
+        B1 = zeros(1, hiddenLayer);
+        W2 = randn(hiddenLayer, outputLayer) * sqrt(1/hiddenLayer);
+        B2 = zeros(1, outputLayer);
+
+        losses = zeros(num_epochs,1);
+
+        tic; % Start timer
+        
+        for epoch = 1:num_epochs
+            
+            % Forward pass
+            Z1 = XTrain * W1 + B1;
+            A1 = sigmoid(Z1);
+
+            Z2 = A1 * W2 + B2;
+            A2 = sigmoid(Z2);
+
+            loss = mse_loss(YTrain_dummy, A2);
+            losses(epoch) = loss;
+
+            % Backpropagation
+            delta2 = (A2 - YTrain_dummy) .* (A2 .* (1 - A2)) / numSamples;
+
+            dW2 = A1' * delta2;
+            dB2 = sum(delta2,1);
+
+            delta1 = (delta2 * W2') .* (A1 .* (1 - A1));
+
+            dW1 = XTrain' * delta1;
+            dB1 = sum(delta1,1);
+
+            % Gradient descent update
+            W1 = W1 - learning_rate * dW1;
+            B1 = B1 - learning_rate * dB1;
+            W2 = W2 - learning_rate * dW2;
+            B2 = B2 - learning_rate * dB2;
+
+        end
+        
+        training_time = toc; % Stop timer
+
+        %% Evaluate Test Accuracy
+        Z1_test = XTest * W1 + B1;
+        A1_test = sigmoid(Z1_test);
+
+        Z2_test = A1_test * W2 + B2;
+        A2_test = sigmoid(Z2_test);
+
+        [~, predicted] = max(A2_test, [], 2);
+        [~, actual] = max(YTest_dummy, [], 2);
+
+        test_accuracy = mean(predicted == actual) * 100;
+
+        % Store results
+        results = [results; lr h training_time test_accuracy];
+
+    end
+end
 %% Functions
 
 % Define Sigmoid Activation Function
@@ -148,14 +308,7 @@ function output = sigmoid(z)
     output = 1./ (1 + exp(-z));
 end
 
-% Cross Entropy Loss
-function loss = cross_entropy(predictions, true_labels)
-m = size(predictions, 1);% number of samples
-% Add small epsilon to avoid log(0)
-loss = -sum(sum(true_labels .* log(predictions + 1e-8))) / m;
-end 
-
-function output = sigmoid_derivative(a)
+function output = sigmoid_derivative(a) %This was hardcoded in the final iteration
     % Derivative of sigmoid: a * (1 - a)
     output = a .* (1 - a);
 end
