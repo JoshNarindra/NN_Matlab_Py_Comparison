@@ -231,8 +231,6 @@ results_table = table(results(:,1), results(:,2), results(:,3), results(:,4), 'V
 
 writetable(results_table,'hyperparameter_results.csv');
 
-fprintf("Exported hyperparameter results to hyperparameter_results.csv\n");
-
 
 %% Functions
 
