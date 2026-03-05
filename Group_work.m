@@ -8,7 +8,7 @@
 data = readtable('Dry_Bean_Dataset.xlsx');
 
 %% Inspect Data
-% No Missing Data Dataset Pre Cleaned
+% No Missing Data Dataset Pre Cleaned N: 64 LR: 0.05 
 
 size(data)
 %head(data);
@@ -53,11 +53,11 @@ YTest_dummy = dummyvar(YTest);
 %% Build Single Hidden Layer Multilayer Perceptron
 
 % Hyperparameters
-hiddenLayer = 64;
+hiddenLayer = 128;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.05;
+learning_rate = 0.1;
 num_epochs = 300; % Set the number of training epochs
 
 %I NEED TO VARY THESE HYPERPARAMETERS 
@@ -153,7 +153,7 @@ fprintf('✓ Exported training losses to matlab_losses.csv\n');
 % the differences in training speeds and test set accuracies 
 
 
-learning_rates = [0.001 0.01 0.05 0.1];
+learning_rates = [0.01 0.05 0.1];
 hidden_sizes = [32 64 128];
 
 results = [];
@@ -207,6 +207,8 @@ for lr = learning_rates
 
         end
         
+        final_loss = losses(end);
+
         training_time = toc; % Stop timer
 
         %% Evaluate Test Accuracy
@@ -222,12 +224,12 @@ for lr = learning_rates
         test_accuracy = mean(predicted == actual) * 100;
 
         % Store results
-        results = [results; lr h training_time test_accuracy];
+        results = [results; lr h training_time test_accuracy final_loss];
 
     end
 end
 
-results_table = table(results(:,1), results(:,2), results(:,3), results(:,4), 'VariableNames', {'LearningRate','HiddenNeurons','TrainingTime','Accuracy'});
+results_table = table(results(:,1), results(:,2), results(:,3), results(:,4), results(:,5), 'VariableNames', {'LearningRate','HiddenNeurons','TrainingTime','Accuracy','Final Loss'});
 
 writetable(results_table,'hyperparameter_results.csv');
 
