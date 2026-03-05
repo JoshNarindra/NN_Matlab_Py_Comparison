@@ -63,7 +63,7 @@ num_epochs = 300; % Set the number of training epochs
 %I NEED TO VARY THESE HYPERPARAMETERS 
 
 % Initialise Weights
-%rng(42); %seed
+rng(42); %seed
 W1 = randn(inputFeatures, hiddenLayer) * sqrt(1/inputFeatures); % here chatgpt helped add a scaling multipler
 B1 = zeros(1, hiddenLayer);
 W2 = randn(hiddenLayer,outputLayer) * sqrt(1/hiddenLayer); % here chatgpt helped add a scaling multipler
