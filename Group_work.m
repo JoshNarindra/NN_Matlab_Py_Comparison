@@ -53,11 +53,11 @@ YTest_dummy = dummyvar(YTest);
 %% Build Single Hidden Layer Multilayer Perceptron
 
 % Hyperparameters
-hiddenLayer = 64;
+hiddenLayer = 128;
 inputFeatures = 16;
 outputLayer = 7;
 
-learning_rate = 0.05;
+learning_rate = 0.1;
 num_epochs = 300; % Set the number of training epochs
 
 %I NEED TO VARY THESE HYPERPARAMETERS 
