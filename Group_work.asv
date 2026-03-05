@@ -8,7 +8,7 @@
 data = readtable('Dry_Bean_Dataset.xlsx');
 
 %% Inspect Data
-% No Missing Data Dataset Pre Cleaned
+% No Missing Data Dataset Pre Cleaned N: 64 LR: 0.05 
 
 size(data)
 %head(data);
@@ -229,7 +229,7 @@ for lr = learning_rates
     end
 end
 
-results_table = table(results(:,1), results(:,2), results(:,3), results(:,4), results(:,5), 'VariableNames', {'LearningRate','HiddenNeurons','TrainingTime','Accuracy','Final'});
+results_table = table(results(:,1), results(:,2), results(:,3), results(:,4), results(:,5), 'VariableNames', {'LearningRate','HiddenNeurons','TrainingTime','Accuracy','Final Loss'});
 
 writetable(results_table,'hyperparameter_results.csv');
 
