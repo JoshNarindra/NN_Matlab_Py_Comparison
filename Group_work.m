@@ -8,7 +8,7 @@
 data = readtable('Dry_Bean_Dataset.xlsx');
 
 %% Inspect Data
-% No Missing Data Dataset Pre Cleaned
+% No Missing Data Dataset Pre Cleaned N: 64 LR: 0.05 
 
 size(data)
 %head(data);
